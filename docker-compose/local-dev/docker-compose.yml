@@ -1,0 +1,52 @@
+version: '3.6'
+
+services:
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: Mmdp-3325
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      
+  elasticsearch:
+    image: elasticsearch:6.8.2
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - node.name=node-1
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - node.master=true
+      - node.data=true
+      - http.port=9200
+      - transport.tcp.port=9300
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - MAX_LOCKED_MEMORY=unlimited
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1

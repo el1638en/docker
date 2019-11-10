@@ -1,0 +1,8 @@
+version: '3.6'
+
+services:
+  apache2:
+    image: myapache2
+    container_name: apache2
+    ports:
+      - "80:80"
