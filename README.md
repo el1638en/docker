@@ -1,21 +1,21 @@
 ## Docker
 
-Un Conteneur Linux est un processus ou un ensemble de processus isolés du reste du système. Un conteneur qui accueille une application contient tous les fichiers, les bibliothèques et les dépendances nécessaires au fonctionnement de l'application de façon autonome. Il est portable et fonctionne de la même manière sur un environnement de développement, de test ou de production. Sous Linux, la techologie de virtualisation [LXC](https://linuxcontainers.org/fr/) permet de fabriquer des conteneurs.
+Un Conteneur Linux est un processus ou un ensemble de processus isolés du reste du système. Un conteneur qui accueille une application contient tous les fichiers, les bibliothèques et les dépendances nécessaires pour que celle-ci fonctionne de façon autonome. Il est portable et fonctionne de la même manière sur un environnement de développement, de test ou de production. Sous Linux, la techologie de virtualisation [LXC](https://linuxcontainers.org/fr/) permet de fabriquer des conteneurs.
 
 On voit que Docker n'a pas inventé les conteneurs.
 Par contre, Docker est un outil qui permet de créer plus facilement des conteneurs afin d'isoler des applications dans des "prisons" pour ne pas gêner d'autres applications. L'intérêt de Docker réside dans l'utilisation des outils qu'il propose pour fabriquer des conteneurs de manière plus simplifiée.
 
 1. Installation
 
-  Pour installer Docker, se référer à la [documentation officielle en ligne](https://docs.docker.com/install/). Dans ce document, nous allons nous concentrer sur Dockerfile.
+  Pour installer Docker, se référer à la [documentation officielle en ligne](https://docs.docker.com/install/). Dans ce document, nous allons nous concentrer sur Dockerfile et docker-compose.
 
 2. [Dockerfile](https://docs.docker.com/engine/reference/builder/)
 
-  Docker utilise des images officielles pour créer des conteneurs. Savoir utiliser des images, c'est bien. Savoir créer des images personnalisées, c'est encore mieux.
+  Docker utilise des images officielles pour créer des conteneurs. Savoir utiliser des images, c'est bien. Savoir créer des images personnalisées soi-même, c'est encore mieux.
 
   Une méthode pour créer une image Docker est d'utiliser un fichier Dockerfile. Le Dockerfile contient toutes les instructions (métadonnées, commande shell, etc...) pour créer une image. Il se base sur une image existante pour créer une nouvelle image.
 
-  Voici un aperçu des commandes Docker :
+  Voici un aperçu des commandes utilisées dans un Dockerfile :
 
   ```shell
   FROM # Pour choisir l'image de base toujours en premier
@@ -25,18 +25,18 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
   ENV # Permet d'éditer des variables d'environnement
   ARG # Un peu comme ENV, mais seulement le temps de la construction de l'image
   COPY # Permet de copier un fichier ou répertoire de l'hôte vers l'image
-  ADD # Permet de copier un fichier de l'hôte ou depuis une URL vers l'image, permet également de décompresser un
+  ADD # Permet de copier un fichier de l'hôte ou depuis une URL vers l'image
   ENTRYPOINT # Commande exécutée au démarrage du conteneur
-  VOLUME # Crée une partition spécifique
+  VOLUME # Créer une partition spécifique
   WORKDIR # Permet de choisir le répertoire de travail
-  USER # Choisit l'utilisateur qui lance la commande du ENTRYPOINT ou du CMD
+  USER # Choisir l'utilisateur qui lance la commande du ENTRYPOINT ou du CMD
   HEALTHCHECK # Permet d'ajouter une commande pour vérifier l'état de fonctionnement du conteneur
   STOPSIGNAL # permet de choisir le signal qui sera envoyé au conteneur lorsque vous ferez un docker container stop
   ```
 
   La liste des instructions disponibles dans un Dockerfile est accessible dans la [documentation officielle](https://docs.docker.com/engine/reference/builder/).
 
-  Voici un exemple de Dockerfile qui crée l'image d'un serveur Tomcat avec une application war embarquée dans le webapps.
+  Voici un exemple de Dockerfile qui crée l'image d'un serveur Tomcat avec une application `war` embarquée dans le webapps.
 
   ```shell
   # Choisir l'image sur laquelle on se base pour créer cette image.
@@ -75,19 +75,25 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
   ```
 
   Quelques commentaires :
-    - `FROM openjdk:8` : on se base sur l'image de Java 8
-    - `ENV CATALINA_HOME /usr/local/tomcat` : On définit des variables d'environnement telles que le répertoire d'installation d'Apache Tomcat, la version d'Apache Tomcat à installer, etc...
-    - l'archive du serveur d'Apache Tomcat est téléchargé et dézippé. Etant sur un environnement Linux, on supprime les fichiers ` *.bat`.
-    - `ADD apps-api-1.0.0.war $CATALINA_HOME/webapps/` : le fichier war est ajouté dans le répertoire `webapps` de Tomcat.
-    - `EXPOSE 8080` : On expose le port `8080`
-    -  `CMD ["catalina.sh", "run"]` : enfin, nous ajoutons la commande à lancer au démarrage du container (l'exécution du script `catalina.sh`).
 
-  Pour construire l'image, utiliser la commande `docker image build -t [tagName:version] .`. Pour en savoir plus sur la commande, consulter l'aide `docker image build --help`
+  - `FROM openjdk:8` : on se base sur l'image de Java 8
+
+  - `ENV CATALINA_HOME /usr/local/tomcat` : On définit des variables d'environnement telles que le répertoire d'installation d'Apache Tomcat, la version d'Apache Tomcat à installer, etc...
+
+  - l'archive du serveur d'Apache Tomcat est téléchargé et dézippé. Etant sur un environnement Linux, on supprime les fichiers ` *.bat`
+
+  - `ADD apps-api-1.0.0.war $CATALINA_HOME/webapps/` : le fichier war est ajouté dans le répertoire `webapps` de Tomcat.
+
+  - `EXPOSE 8080` : On expose le port `8080`
+
+  -  `CMD ["catalina.sh", "run"]` : enfin, nous ajoutons la commande à lancer au démarrage du container (l'exécution du script `catalina.sh`).
+
+  Pour construire l'image, utiliser la commande `docker image build -t tagName:version .`. Pour en savoir plus sur la commande `docker image build`, consulter l'aide `docker image build --help`.
 
   Dans notre cas, nous allons créer l'image `apps-api:1.0.0` :
 
   ```shell
-  docker image build -t apps-api:1.0.0 .
+  legeric@pl-debian:~/dev/devops/workspace/dockerfiles/tomcat9$ docker image build -t apps-api:1.0.0 .
   ```
 
   Voici la sortie console :
@@ -213,8 +219,7 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
 
   __**Remarque**__
 
-  Une instruction du Dockerfile est construite sur la base des instructions qui la précèdent. Une instruction est un layer (une couche) construite à partir des instructions (layers) précédentes. Multiplier les layers dans une image peut diminuer les performances de celles-ci. Par exemple, si nous avons besoin d'une commande dans un layer et que celle-ci avait été créée 10 layers plus haut, le conteneur recherchera la commande layer après layer jusqu'à retrouver la commande. Si le nombre de layers est considérable, cela peut impacter les performances.
-  Pour éviter cela, il est conseillé de regrouper plusieurs commandes dans une même étape. Dans le Dockerfile ci-dessus, nous avons réduit le nombre de layers en réalisant le téléchargement, le désarchivage et la suppression des fichiers dans une seule commande :
+  Une instruction du Dockerfile est un layer (une couche) construite à partir des instructions (layers) précédentes. Multiplier les layers dans une image peut diminuer les performances de celles-ci. Par exemple, si nous avons besoin d'une commande dans un layer et que celle-ci avait été créée 10 layers plus haut, le conteneur recherchera la commande layer après layer jusqu'à la retrouver. Si le nombre de layers est considérable, cela peut impacter les performances. Pour éviter cela, il est conseillé de regrouper plusieurs commandes dans une même étape. Dans le Dockerfile ci-dessus, nous avons réduit le nombre de layers en réalisant le téléchargement, le désarchivage et la suppression des fichiers dans une seule commande :
 
   ```shell
   RUN set -x \
@@ -226,21 +231,42 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
 
   Penser à ajouter le caractère d'échappement `\` à la fin de chaque nouvelle ligne.
 
-3. Quelques commandes/alias à maîtriser pour manipuler les conteneurs Docker
 
-  - Créer un container docker : `docker container run -it -d --name nom_container nom_tag:version_tag`
+3. Commandes/alias Docker
 
-  - Se connecter à un container (console bash): `docker container exec -it nom_container bash`
+  - Créer un container docker :
 
-  - Liste des containers : `docker container ps -a`
+    ```shell
+    docker container run -it -d --name nom_container nom_tag:version_tag
+    ```
 
-  - Arrêter un container : `docker container stop nom_container`
+  - Se connecter à un container (console bash):
 
-  - Supprimer un container: `docker container rm nom_container`
+    ```shell
+    docker container exec -it nom_container /bin/bash
+    ```
+
+  - Liste des containers :
+
+    ```shell
+    docker container ps -a
+    ```
+
+  - Arrêter un container :
+
+    ```shell
+    docker container stop nom_container
+    ```
+
+  - Supprimer un container:
+
+    ```shell
+    docker container rm nom_container
+    ```
 
   Pour manipuler plus facilement les containers, on peut créer des alias dans un fichier `~/.docker_alias`
 
-  ```shell
+  ```shell/watch?v=e-ErPErC6lY&list=RDLK79LuZ8sBo&index=6
   #!/bin/bash
   alias dk='docker'
   # Liste des processus Docker
@@ -271,9 +297,7 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
 
   ## [Docker-compose](https://docs.docker.com/compose/)
 
-  Docker Compose est un outil qui permet de décrire dans un fichier YAML (docker-compose.yml) un ensemble de conteneurs Docker. Docker-compose propose des commandes pour gérer les conteneurs comme un ensemble de services. Par exemple, dans un environnement de développement, nous pouvons avoir besoin de plusieurs conteneurs (PostgreSQL, ELK, etc...). Il faut lancer manuellement chaque conteneur avec la commande `docker container run`. Avec Docker-compose, nous pouvons démarrer (`docker-compose up`) ou arrêter (`docker-compose down`) tous les conteneurs en une seule ligne de commande.
-
-  Sans trop tarder, nous allons installer `docker-compose` et l'utiliser dans un cas pratique.
+  docker-compose est un outil qui permet de décrire dans un fichier YAML (`docker-compose.yml`) un ensemble de conteneurs Docker. Docker-compose propose des commandes pour gérer les conteneurs comme un ensemble de services. Par exemple, dans un environnement de développement, nous pouvons avoir besoin de plusieurs conteneurs (PostgreSQL, ELK, etc...). Il faut lancer manuellement chaque conteneur avec la commande `docker container run`. Avec Docker-compose, nous pouvons démarrer (`docker-compose up`) ou arrêter (`docker-compose down`) tous les conteneurs en une seule ligne de commande.
 
   1. Installation
 
@@ -307,15 +331,11 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
       OpenSSL version: OpenSSL 1.1.0k  28 May 2019
       ```
 
-  2. Cas d'utilisation
+  2. Exemple de fichier docker-compose.yml
 
-    Voici un exemple de fichier docker-compose.yml (fichier dosponible dans le dossier local-dev).
-
-    ```YAML
+  ```YAML
       version: '3.6'
-
       services:
-
         postgres:
           image: postgres
           container_name: postgres
@@ -335,7 +355,6 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
           container_name: zookeeper
           ports:
             - "2181:2181"
-
         kafka:
           image: wurstmeister/kafka
           container_name: kafka
@@ -346,81 +365,51 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
           environment:
             KAFKA_ADVERTISED_HOST_NAME: localhost
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  ```
 
-        elasticsearch:
-          image: elasticsearch:6.8.2
-          container_name: elasticsearch
-          ports:
-            - "9200:9200"
-            - "9300:9300"
-          environment:
-            - node.name=node-1
-            - cluster.name=docker-cluster
-            - bootstrap.memory_lock=true
-            - http.cors.enabled=true
-            - http.cors.allow-origin=*
-            - node.master=true
-            - node.data=true
-            - http.port=9200
-            - transport.tcp.port=9300
-            - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-            - MAX_LOCKED_MEMORY=unlimited
-          ulimits:
-            memlock:
-              soft: -1
-              hard: -1
-    ```
+  - Le service `postgres` pour fournir le SGBD PostgreSQL.
+    Ce service fournit le conteneur `postgres` qui utilise l'image publique [postgres](https://hub.docker.com/_/postgres). Nous avons indiqué les valeurs des variables d'environnement `POSTGRES_USER` et `POSTGRES_PASSWORD` qu'on utilisera pour se connecter à la BDD. Quand on observe la configuration, on remarque que ce service reprend en quelques lignes les paramètres qu'utilise `docker` pour exécuter ou stopper un conteneur postgres manuellement.
 
-    - Le service `postgres` pour fournir le SGBD PostgreSQL.
+  - Le service `zookeeper`. `Kafka` utilise Zookeeper. Donc nous ajoutons ce service zookeeper qui sera utile à Kafka.
 
-        Ce service fournit le conteneur `postgres` qui utilise l'image publique [postgres](https://hub.docker.com/_/postgres).
-        Nous avons indiqué les valeurs des variables d'environnement `POSTGRES_USER` et `POSTGRES_PASSWORD` qu'on utilisera pour se connecter à la BDD. Quand on observe la configuration, on remarque que ce service reprend en quelques lignes les paramètres qu'utilise `docker` pour exécuter ou stopper un conteneur postgres manuellement.
-
-    - Le service `zookeeper`
-
-        `Kafka` utilise Zookeeper. Donc nous ajoutons ce service zookeeper qui sera utile à Kafka.
-
-    - Le service `kafka`
-
-        docker-compose va créer un service `kafka` qui dépend du service `Zookeeper`. `kafka` ne sera construit que si le service `zookeeper` est construit avec succès (`depends_on: zookeeper`).
-
-    - Le service `elasticsearch`
-
-        Ce service lance un conteneur `elasticsearch` accessible via les ports HTTP 9200 et TCP 9300.
+  - Le service `kafka`
+    docker-compose va créer un service `kafka` qui dépend du service `Zookeeper`. `kafka` ne sera construit que si le service `zookeeper` est construit avec succès (`depends_on: zookeeper`).
 
   Avec docker-compose, nous définissons en quelques lignes ce qu'il faut faire manuellement avec plusieurs lignes de commandes `docker`.
 
   Quelques commandes `docker-compose` utiles :
 
-    - `docker-compose up -d` : lancer tous les services présents dans le fichier `docker-compose.yml` en arrière-plan ( option `-d`) pour rendre la main à l'utilisateur.
+  - `docker-compose up -d` : lancer tous les services présents dans le fichier `docker-compose.yml` en arrière-plan ( option `-d`) pour rendre la main à l'utilisateur.
 
-    - `docker-compose stop` : arrêter les services
+  - `docker-compose stop` : arrêter les services
 
-    - `docker-compose restart` : redémarrer les services
+  - `docker-compose restart` : redémarrer les services
 
-    - `docker-compose exec [nom_conteneur] /bin/bash` : fournit une console `bash` au sein du conteneur `nom_conteneur`.
+  - `docker-compose exec [nom_conteneur] /bin/bash` : fournit une console `bash` au sein du conteneur `nom_conteneur`.
 
-    - `docker-compose logs` : fournit l'ensemble des logs de tous les services depuis le démarrage.
+  - `docker-compose logs` : fournit l'ensemble des logs de tous les services depuis le démarrage.
 
-    - `docker-compose logs -f` : affiche les logs des services et continue à les « écouter » sans rendre la main.
+  - `docker-compose logs -f` : affiche les logs des services et continue à les « écouter » sans rendre la main.
 
-    - `docker-compose logs -f [nom_conteneur]` : affiche uniquement les logs du conteneur `nom_conteneur`.
+  - `docker-compose logs -f [nom_conteneur]` : affiche uniquement les logs du conteneur `nom_conteneur`.
 
-    On peut enrichir le fichier des alias avec de nouveaux alias pour manipuler `docker-compose` :
+  On peut enrichir le fichier des alias avec de nouveaux alias pour manipuler `docker-compose` :
 
-    ```shell
-    # ==== Alias Docker-compose ===
-    # Start the docker-compose stack in the current directory
-    alias dcup="docker-compose up -d"
-    # Arrêter Docker-compose
-    alias dcst="docker-compose stop"
-    # Arrêter Docker-compose et supprimer tous les containers.
-    alias dcdo="docker-compose down"
-    # Redémarrer Docker-compose
-    alias dcrs="docker-compose restart"
-    # Consulter les logs de la stack docker-compose
-    alias dclo="docker-compose logs"
-    ```
+  ```shell
+  # ==== Alias Docker-compose ===
+  # Start the docker-compose stack in the current directory
+  alias dcup="docker-compose up -d"
+  # Arrêter Docker-compose
+  alias dcst="docker-compose stop"
+  # Arrêter Docker-compose et supprimer tous les containers.
+  alias dcdo="docker-compose down"
+  # Redémarrer Docker-compose
+  alias dcrs="docker-compose restart"
+  # Consulter les logs de la stack docker-compose
+  alias dclo="docker-compose logs"
+  # Liste des containers
+  alias dcps="docker-compose ps -a"
+  ```
 
   3. Autres
 
@@ -444,15 +433,15 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
 
         2. Kafka
 
-          - Se connecter au conteneur/service kafka : `docker-compose exec kafka /bin/bash` ou `docker exec -it kafka`
+            - Se connecter au conteneur/service kafka : `docker-compose exec kafka /bin/bash` ou `docker exec -it kafka`
 
-          - Une fois connecté, créer un topic (le topic nommé `test` par exemple) kafka : `kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1  --partitions 1 --topic test`
+            - Une fois connecté, créer un topic (le topic nommé `test` par exemple) kafka : `kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1  --partitions 1 --topic test`
 
-          - Consulter la liste des topics kafka : `kafka-topics.sh --list --bootstrap-server localhost:9092`
+            - Consulter la liste des topics kafka : `kafka-topics.sh --list --bootstrap-server localhost:9092`
 
-          - Décrire un topic : `kafka-topics.sh --zookeeper localhost:2181 --describe --topic test`
+            - Décrire un topic : `kafka-topics.sh --zookeeper localhost:2181 --describe --topic test`
 
-          - Supprimer un topic kafka :
+            - Supprimer un topic kafka :
 
               - Arrêter le serveur en activant l'option de suppression des topics : `kafka-server-stop.sh opt/kafka/config/server.properties --override delete.topic.enable=true`
 
@@ -464,10 +453,10 @@ Par contre, Docker est un outil qui permet de créer plus facilement des contene
 
         3. PostgreSQL
 
-          - Se connecter au conteneur postgres : `docker-compose exec postgres /bin/bash` ou `docker exec -it postgres /bin/bash`
+            - Se connecter au conteneur postgres : `docker-compose exec postgres /bin/bash` ou `docker exec -it postgres /bin/bash`
 
-          - Créer un nouvel utilisateur avec des attributs : `psql -c "CREATE USER test LOGIN password 'test' CREATEDB CREATEROLE;"`
+            - Créer un nouvel utilisateur avec des attributs : `psql -c "CREATE USER test LOGIN password 'test' CREATEDB CREATEROLE;"`
 
-          - Créer une base de données : `psql -c "CREATE DATABASE db_test OWNER=test;"`
+            - Créer une base de données : `psql -c "CREATE DATABASE db_test OWNER=test;"`
 
-          - Créer un schéma de base de données : `psql -d db_test -c "SET SEARCH_PATH TO db_test; CREATE SCHEMA db_test AUTHORIZATION test;"`
+            - Créer un schéma de base de données : `psql -d db_test -c "SET SEARCH_PATH TO db_test; CREATE SCHEMA db_test AUTHORIZATION test;"`

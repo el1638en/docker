@@ -30,3 +30,5 @@ alias dcdo="docker-compose down"
 alias dcrs="docker-compose restart"
 # Consulter les logs de la stack docker-compose
 alias dclo="docker-compose logs"
+# Liste des containers
+alias dcps="docker-compose ps -a"
